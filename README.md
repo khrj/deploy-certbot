@@ -15,10 +15,10 @@ CERTBOT_DOMAINS=example1.com,a.example.com
 1. Provision
 
 ```sh
-docker-compose up certbot-init
+docker compose run --rm certbot-init
 ```
 
 2. Setup renewal
 ```sh
-docker-compose up -d certbot
+docker compose up -d certbot
 ```
