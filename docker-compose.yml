@@ -1,0 +1,41 @@
+
+services:
+  certbot-renew:
+    image: certbot/dns-cloudflare
+    restart: unless-stopped
+    entrypoint: /bin/sh
+    volumes:
+      - "./letsencrypt/config:/etc/letsencrypt"
+      - "./letsencrypt/data:/var/lib/letsencrypt"
+    environment:
+      - CLOUDFLARE_API_TOKEN=${CLOUDFLARE_API_TOKEN}
+    command: >-
+      -c "
+        while true; do
+          certbot renew --dns-cloudflare-credentials /etc/letsencrypt/cloudflare.ini;
+          sleep 12h;
+        done
+      "
+
+  certbot-init:
+    image: certbot/dns-cloudflare
+    entrypoint: /bin/sh
+    volumes:
+      - "./letsencrypt/config:/etc/letsencrypt"
+      - "./letsencrypt/data:/var/lib/letsencrypt"
+    environment:
+      - CLOUDFLARE_API_TOKEN=${CLOUDFLARE_API_TOKEN}
+      - CERTBOT_EMAIL=${CERTBOT_EMAIL}
+      - CERTBOT_DOMAINS=${CERTBOT_DOMAINS}
+    command: >-
+      -c "
+        echo 'dns_cloudflare_api_token = ${CLOUDFLARE_API_TOKEN}' > /etc/letsencrypt/cloudflare.ini &&
+        chmod 600 /etc/letsencrypt/cloudflare.ini &&
+        certbot certonly \\
+          --dns-cloudflare \\
+          --dns-cloudflare-credentials /etc/letsencrypt/cloudflare.ini \\
+          --non-interactive \\
+          --agree-tos \\
+          --email ${CERTBOT_EMAIL} \\
+          -d ${CERTBOT_DOMAINS}
+      "
